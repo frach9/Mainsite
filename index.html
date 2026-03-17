@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IPNet Student Hub — Portail Académique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:      #0b1629;
+      --navy-mid:  #112240;
+      --navy-card: #162a4a;
+      --gold:      #c9a84c;
+      --gold-lt:   #e8c97a;
+      --gold-dim:  rgba(201,168,76,.18);
+      --white:     #f0eeea;
+      --muted:     #8fa3bf;
+      --accent:    #4a90c4;
+      --radius:    12px;
+      --transition: .35s cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      opacity: .5;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(11,22,41,.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(201,168,76,.12);
+      transition: var(--transition);
+    }
+    nav.scrolled {
+      padding: .9rem 4rem;
+      box-shadow: 0 8px 40px rgba(0,0,0,.4);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: .75rem;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 700; font-size: 1.1rem;
+      color: var(--navy);
+    }
+    .nav-logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem; font-weight: 600;
+      color: var(--white); letter-spacing: .02em;
+    }
+    .nav-logo-text span { color: var(--gold); }
+    .nav-links {
+      display: flex; gap: 2.5rem; list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: .85rem; font-weight: 500; letter-spacing: .08em;
+      text-transform: uppercase;
+      transition: color var(--transition);
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 1px; background: var(--gold);
+      transform: scaleX(0); transition: transform var(--transition);
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: var(--navy) !important;
+      padding: .5rem 1.4rem; border-radius: 6px;
+      font-weight: 600 !important;
+      transition: box-shadow var(--transition), transform var(--transition) !important;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { transform: translateY(-1px) !important; box-shadow: 0 6px 24px rgba(201,168,76,.35) !important; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center;
+      padding: 7rem 2rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+    }
+    .hero-orb {
+      position: absolute; border-radius: 50%; pointer-events: none;
+    }
+    .hero-orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(74,144,196,.12) 0%, transparent 70%);
+      top: -100px; left: -100px;
+    }
+    .hero-orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%);
+      bottom: -80px; right: -80px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,.3);
+      color: var(--gold-lt);
+      padding: .45rem 1.1rem; border-radius: 99px;
+      font-size: .78rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      animation: fadeDown .8s ease both;
+    }
+    .hero-badge::before { content: '◈'; font-size: .7rem; }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      font-weight: 300; line-height: 1.05;
+      letter-spacing: -.02em;
+      margin-bottom: 1rem;
+      animation: fadeUp .9s .1s ease both;
+    }
+    .hero-title em {
+      font-style: italic; color: var(--gold);
+      display: block;
+    }
+    .hero-subtitle {
+      font-size: clamp(.95rem, 1.5vw, 1.2rem);
+      color: var(--muted); max-width: 600px;
+      line-height: 1.75; font-weight: 300;
+      margin-bottom: 3rem;
+      animation: fadeUp .9s .2s ease both;
+    }
+    .hero-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp .9s .3s ease both;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .85rem 2rem; border-radius: 8px;
+      font-size: .9rem; font-weight: 500; letter-spacing: .04em;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);
+      color: var(--navy);
+      box-shadow: 0 4px 20px rgba(201,168,76,.25);
+    }
+    .btn-primary:hover { box-shadow: 0 8px 32px rgba(201,168,76,.4); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(201,168,76,.35);
+      color: var(--gold-lt);
+    }
+    .btn-ghost:hover { background: var(--gold-dim); }
+
+    .hero-stats {
+      display: flex; gap: 3rem; margin-top: 5rem;
+      animation: fadeUp .9s .4s ease both;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem; font-weight: 600; color: var(--gold);
+    }
+    .stat-label {
+      font-size: .75rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .1em;
+      margin-top: .2rem;
+    }
+    .stat-divider {
+      width: 1px; background: rgba(201,168,76,.2);
+    }
+
+    /* ── SECTION COMMONS ── */
+    section {
+      position: relative; z-index: 1;
+    }
+    .section-inner {
+      max-width: 1200px; margin: 0 auto; padding: 6rem 2rem;
+    }
+    .section-label {
+      display: flex; align-items: center; gap: .75rem;
+      color: var(--gold); font-size: .78rem;
+      font-weight: 500; letter-spacing: .14em;
+      text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .section-label::before {
+      content: ''; display: block;
+      width: 32px; height: 1px; background: var(--gold);
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 400; line-height: 1.15;
+      margin-bottom: 1.2rem;
+    }
+    .section-desc {
+      color: var(--muted); max-width: 580px;
+      line-height: 1.8; font-size: .95rem; font-weight: 300;
+    }
+
+    /* ── SEPARATOR ── */
+    .sep {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,.2), transparent);
+      margin: 0 4rem;
+    }
+
+    /* ── ABOUT ── */
+    #about { background: var(--navy-mid); }
+    .about-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem;
+      align-items: center;
+    }
+    .about-visual {
+      position: relative; height: 380px;
+    }
+    .about-card-big {
+      position: absolute; top: 0; left: 0; right: 2rem; bottom: 2rem;
+      background: var(--navy-card);
+      border: 1px solid rgba(201,168,76,.12);
+      border-radius: var(--radius);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 2rem; overflow: hidden;
+    }
+    .about-card-big::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--accent));
+    }
+    .about-card-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem; font-weight: 700;
+      color: rgba(201,168,76,.1);
+      position: absolute; top: 1rem; right: 1.5rem;
+      line-height: 1;
+    }
+    .about-card-title { font-size: 1rem; font-weight: 500; margin-bottom: .35rem; }
+    .about-card-sub { font-size: .82rem; color: var(--muted); }
+    .about-card-sm {
+      position: absolute; bottom: 0; right: 0;
+      width: 200px;
+      background: var(--navy);
+      border: 1px solid rgba(201,168,76,.2);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      display: flex; gap: 1rem; align-items: center;
+    }
+    .about-card-sm-icon {
+      width: 42px; height: 42px; border-radius: 8px;
+      background: var(--gold-dim);
+      display: grid; place-items: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .about-card-sm-text { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+    .about-card-sm-text strong { color: var(--white); font-size: .88rem; display: block; }
+    .features {
+      display: flex; flex-direction: column; gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .feature-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 8px;
+      background: var(--gold-dim); border: 1px solid rgba(201,168,76,.2);
+      display: grid; place-items: center;
+      flex-shrink: 0; font-size: 1rem;
+    }
+    .feature-text h4 { font-size: .9rem; font-weight: 500; margin-bottom: .3rem; }
+    .feature-text p { font-size: .82rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── GROUPS ── */
+    #groups { background: var(--navy); }
+    .groups-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 3.5rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .groups-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+    }
+    .group-card {
+      background: var(--navy-card);
+      border: 1px solid rgba(201,168,76,.1);
+      border-radius: var(--radius);
+      padding: 2rem;
+      position: relative; overflow: hidden;
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+      display: flex; flex-direction: column;
+      cursor: pointer;
+    }
+    .group-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      opacity: 0; transition: opacity var(--transition);
+    }
+    .group-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(201,168,76,.35);
+      box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(201,168,76,.1);
+    }
+    .group-card:hover::before { opacity: 1; }
+    .group-number {
+      font-family: 'DM Mono', monospace;
+      font-size: .7rem; color: var(--gold);
+      letter-spacing: .12em; margin-bottom: 1.5rem;
+    }
+    .group-icon {
+      width: 56px; height: 56px; border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+      flex-shrink: 0;
+    }
+    .group-icon-1 { background: rgba(74,144,196,.15); }
+    .group-icon-2 { background: rgba(201,168,76,.12); }
+    .group-icon-3 { background: rgba(100,180,140,.12); }
+    .group-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 600;
+      margin-bottom: .5rem;
+    }
+    .group-desc {
+      font-size: .83rem; color: var(--muted);
+      line-height: 1.7; margin-bottom: 1.5rem; flex: 1;
+    }
+    .group-tags {
+      display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem;
+    }
+    .tag {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 99px;
+      padding: .25rem .75rem;
+      font-size: .72rem; color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+    .group-link {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(201,168,76,.07);
+      border: 1px solid rgba(201,168,76,.2);
+      border-radius: 8px; padding: .75rem 1rem;
+      text-decoration: none; color: var(--gold-lt);
+      font-size: .83rem; font-weight: 500;
+      transition: background var(--transition);
+    }
+    .group-link:hover { background: rgba(201,168,76,.15); }
+    .group-link svg { transition: transform var(--transition); }
+    .group-link:hover svg { transform: translateX(4px); }
+
+    /* ── TEAM ── */
+    #team { background: var(--navy-mid); }
+    .team-header { margin-bottom: 3.5rem; }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.2rem;
+    }
+    .team-card {
+      background: var(--navy-card);
+      border: 1px solid rgba(201,168,76,.08);
+      border-radius: var(--radius);
+      padding: 1.8rem 1.5rem;
+      text-align: center;
+      transition: transform var(--transition), border-color var(--transition);
+    }
+    .team-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201,168,76,.25);
+    }
+    .team-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      margin: 0 auto 1.2rem;
+      display: grid; place-items: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem; font-weight: 600;
+      border: 2px solid rgba(201,168,76,.25);
+    }
+    .av-a { background: rgba(74,144,196,.2); color: var(--accent); }
+    .av-b { background: rgba(201,168,76,.15); color: var(--gold); }
+    .av-c { background: rgba(180,100,140,.15); color: #c87bb0; }
+    .av-d { background: rgba(100,180,100,.15); color: #78c878; }
+    .team-name { font-size: .95rem; font-weight: 500; margin-bottom: .25rem; }
+    .team-role { font-size: .78rem; color: var(--gold); font-weight: 500; margin-bottom: .5rem; }
+    .team-group { font-size: .75rem; color: var(--muted); }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--navy); }
+    .contact-wrapper {
+      display: grid; grid-template-columns: 1fr 1.4fr; gap: 5rem; align-items: start;
+    }
+    .contact-info { display: flex; flex-direction: column; gap: 2rem; }
+    .contact-block {
+      background: var(--navy-card);
+      border: 1px solid rgba(201,168,76,.1);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex; gap: 1rem;
+    }
+    .contact-block-icon {
+      width: 44px; height: 44px; border-radius: 8px;
+      background: var(--gold-dim);
+      display: grid; place-items: center;
+      flex-shrink: 0; font-size: 1.2rem;
+    }
+    .contact-block-text h4 { font-size: .9rem; font-weight: 500; margin-bottom: .3rem; }
+    .contact-block-text p { font-size: .82rem; color: var(--muted); line-height: 1.6; }
+    .contact-block-text a { color: var(--gold-lt); text-decoration: none; }
+    .contact-block-text a:hover { color: var(--gold); }
+
+    .form-card {
+      background: var(--navy-card);
+      border: 1px solid rgba(201,168,76,.1);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+    }
+    .form-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; margin-bottom: .5rem;
+    }
+    .form-sub { font-size: .83rem; color: var(--muted); margin-bottom: 2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+    .form-group label {
+      font-size: .78rem; color: var(--muted);
+      letter-spacing: .05em; text-transform: uppercase; font-weight: 500;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      color: var(--white); font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      transition: border-color var(--transition), background var(--transition);
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: rgba(201,168,76,.5);
+      background: rgba(201,168,76,.04);
+    }
+    .form-group select { cursor: pointer; }
+    .form-group select option { background: var(--navy-card); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: rgba(143,163,191,.4); }
+    .form-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: var(--navy);
+      border: none; border-radius: 8px;
+      padding: .95rem 2rem;
+      font-size: .9rem; font-weight: 600;
+      cursor: pointer; letter-spacing: .04em;
+      transition: transform var(--transition), box-shadow var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      margin-top: .5rem;
+    }
+    .form-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(201,168,76,.35);
+    }
+    .form-note {
+      font-size: .75rem; color: var(--muted);
+      text-align: center; margin-top: .75rem;
+    }
+    .form-success {
+      display: none;
+      background: rgba(100,180,140,.1);
+      border: 1px solid rgba(100,180,140,.3);
+      border-radius: 8px;
+      padding: 1.2rem;
+      text-align: center;
+      color: #78c878; font-size: .88rem;
+      margin-top: 1rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy-mid);
+      border-top: 1px solid rgba(201,168,76,.1);
+      padding: 3rem 4rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; color: var(--muted);
+    }
+    .footer-brand span { color: var(--gold); }
+    .footer-links {
+      display: flex; gap: 1.5rem; list-style: none;
+    }
+    .footer-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: .8rem; transition: color var(--transition);
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-copy { font-size: .78rem; color: rgba(143,163,191,.5); }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .about-grid, .contact-wrapper { grid-template-columns: 1fr; }
+      .groups-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .hero-stats { gap: 1.5rem; }
+      footer { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 600px) {
+      .section-inner { padding: 4rem 1.25rem; }
+      .groups-grid { grid-template-columns: 1fr; }
+      .about-visual { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <a href="#hero" class="nav-logo">
+      <div class="nav-logo-icon">IS</div>
+      <span class="nav-logo-text">IPNet <span>Student</span> Hub</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">À Propos</a></li>
+      <li><a href="#groups">Portfolios</a></li>
+      <li><a href="#team">Équipe</a></li>
+      <li><a href="#contact" class="nav-cta">Contacter</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+
+    <div class="hero-badge">Portail Académique · IPNet Experts</div>
+
+    <h1 class="hero-title">
+      IPNet<br><em>Student Hub</em>
+    </h1>
+    <p class="hero-subtitle">
+      Une plateforme unifiée réunissant les portfolios académiques de trois groupes d'étudiants en réseaux et systèmes informatiques.
+    </p>
+    <div class="hero-actions">
+      <a href="#groups" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Explorer les portfolios
+      </a>
+      <a href="#contact" class="btn btn-ghost">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Nous contacter
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Groupes</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num">15</div>
+        <div class="stat-label">Étudiants</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Projets</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-inner">
+      <div class="about-grid">
+        <!-- Visual -->
+        <div class="about-visual reveal">
+          <div class="about-card-big">
+            <div class="about-card-num">IP</div>
+            <div class="about-card-title">Plateforme d'excellence académique</div>
+            <div class="about-card-sub">Formation en réseaux, sécurité & développement</div>
+          </div>
+          <div class="about-card-sm">
+            <div class="about-card-sm-icon">🏆</div>
+            <div class="about-card-sm-text">
+              <strong>Top Formation</strong>
+              Ingénierie des réseaux & systèmes
+            </div>
+          </div>
+        </div>
+        <!-- Text -->
+        <div>
+          <p class="section-label reveal">À propos du projet</p>
+          <h2 class="section-title reveal reveal-delay-1">Un hub unique pour <em style="font-style:italic;color:var(--gold)">cinq équipes</em> talentueuses</h2>
+          <p class="section-desc reveal reveal-delay-2">
+            IPNet Student Hub est un portail central qui agrège les travaux, projets et portfolios de trois groupes d'étudiants spécialisés. Chaque groupe développe ses compétences selon une approche pratique et professionnelle.
+          </p>
+          <div class="features">
+            <div class="feature-item reveal reveal-delay-1">
+              <div class="feature-icon">🌐</div>
+              <div class="feature-text">
+                <h4>Portfolios interconnectés</h4>
+                <p>Chaque sous-groupe dispose de son propre site portfolio hébergé et accessible via ce portail central.</p>
+              </div>
+            </div>
+            <div class="feature-item reveal reveal-delay-2">
+              <div class="feature-icon">🔗</div>
+              <div class="feature-text">
+                <h4>Collaboration inter-groupes</h4>
+                <p>Un système de messagerie facilite les échanges et la coordination entre les différents membres du domaine.</p>
+              </div>
+            </div>
+            <div class="feature-item reveal reveal-delay-3">
+              <div class="feature-icon">🎓</div>
+              <div class="feature-text">
+                <h4>Encadrement pédagogique</h4>
+                <p>Une équipe d'experts accompagne chaque groupe dans la réalisation de ses projets académiques.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- GROUPS / PORTFOLIOS -->
+  <section id="groups">
+    <div class="section-inner">
+      <div class="groups-header">
+        <div>
+          <p class="section-label reveal">Portfolios étudiants</p>
+          <h2 class="section-title reveal reveal-delay-1">Nos cinq <em style="font-style:italic;color:var(--gold)">groupes</em> académiques</h2>
+        </div>
+        <p class="section-desc reveal" style="max-width:320px">Cliquez sur un groupe pour accéder à son portfolio complet.</p>
+      </div>
+
+      <div class="groups-grid">
+
+        <!-- GROUP 1 -->
+        <div class="group-card reveal" onclick="window.open('https://wifr78p.github.io/Porfolio-Equipe5/','_blank')">
+          <div class="group-number">GROUPE · 01</div>
+          <div class="group-icon group-icon-1">🖧</div>
+          <h3 class="group-name">CyberClub-TAB</h3>
+          <p class="group-desc">
+            Premier groupe du programme IPNet Experts, Une équipe d'ingénieurs passionnés créant des solutions technologiques innovantes pour transformer vos idées en réalité.
+          </p>
+          <div class="group-tags">
+            <span class="tag">Réseaux</span>
+            <span class="tag">Systèmes</span>
+            <span class="tag">Cloud</span>
+          </div>
+          <a href="https://wifr78p.github.io/Porfolio-Equipe5/" target="_blank" class="group-link" onclick="event.stopPropagation()">
+            Voir le portfolio
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <!-- GROUP 2 -->
+        <div class="group-card reveal reveal-delay-1" onclick="window.open('https://lebleu357.github.io/DNS_projet/Mini_projet_dns/')">
+          <div class="group-number">GROUPE · 02</div>
+          <div class="group-icon group-icon-2">🔐</div>
+          <h3 class="group-name">SecureNet Team</h3>
+          <p class="group-desc">
+            Troisième groupe du programme, axé sur constructuion d'infrastructure DNS  Sécurisé, garantir une haute disponibilité du réseau et créé une solution moderne fiable.
+          </p>
+          <div class="group-tags">
+            <span class="tag">Cybersécurité</span>
+            <span class="tag">Protocoles</span>
+            <span class="tag">Audit</span>
+          </div>
+          <a href="https://lebleu357.github.io/DNS_projet/Mini_projet_dns/" target="_blank" class="group-link" onclick="event.stopPropagation()">
+            Voir le portfolio
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <!-- GROUP 3 -->
+        <div class="group-card reveal reveal-delay-1" onclick="window.open('http://students3.ipnetexperts.net/','_blank')">
+          <div class="group-number">GROUPE · 03</div>
+          <div class="group-icon group-icon-2">🔐</div>
+          <h3 class="group-name">CyberSec</h3>
+          <p class="group-desc">Elite de la Cybersecurity Professionals, Défenseurs de la sécurité numérique
+          </p>
+          <div class="group-tags">
+            <span class="tag">Cybersécurité</span>
+            <span class="tag">Protocoles</span>
+            <span class="tag">Audit</span>
+          </div>
+          <a href="http://students3.ipnetexperts.net/" target="_blank" class="group-link" onclick="event.stopPropagation()">
+            Voir le portfolio
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <!-- GROUP 4 -->
+        <div class="group-card reveal reveal-delay-2" onclick="window.open('http://students5.ipnetexperts.net/','_blank')">
+          <div class="group-number">GROUPE · 04</div>
+          <div class="group-icon group-icon-3">💻</div>
+          <h3 class="group-name">Students Group 5</h3>
+          <p class="group-desc">
+            Cinquième groupe du programme, centré sur le développement web, les applications réseau, les APIs et l'intégration des systèmes distribués modernes.
+          </p>
+          <div class="group-tags">
+            <span class="tag">Dév Web</span>
+            <span class="tag">APIs</span>
+            <span class="tag">Distribué</span>
+          </div>
+          <a href="http://students5.ipnetexperts.net/" target="_blank" class="group-link" onclick="event.stopPropagation()">
+            Voir le portfolio
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+        <!-- GROUP 5 -->
+        <div class="group-card reveal reveal-delay-1" onclick="window.open('http://students3.ipnetexperts.net/','_blank')">
+          <div class="group-number">GROUPE · 05</div>
+          <div class="group-icon group-icon-2">🔐</div>
+          <h3 class="group-name">CyberSec</h3>
+          <p class="group-desc">Elite de la Cybersecurity Professionals, Défenseurs de la sécurité numérique
+          </p>
+          <div class="group-tags">
+            <span class="tag">Cybersécurité</span>
+            <span class="tag">Protocoles</span>
+            <span class="tag">Audit</span>
+          </div>
+          <a href="http://students3.ipnetexperts.net/" target="_blank" class="group-link" onclick="event.stopPropagation()">
+            Voir le portfolio
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+
+
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- TEAM -->
+  <section id="team">
+    <div class="section-inner">
+      <div class="team-header">
+        <p class="section-label reveal">Équipe pédagogique</p>
+        <h2 class="section-title reveal reveal-delay-1">Les <em style="font-style:italic;color:var(--gold)">experts</em> qui encadrent</h2>
+        <p class="section-desc reveal reveal-delay-2">
+          Une équipe de formateurs et superviseurs expérimentés accompagne chaque groupe dans la réalisation de leurs projets académiques.
+        </p>
+      </div>
+      <div class="team-grid">
+      
+        <div class="team-card reveal reveal-delay-1">
+          <div class="team-avatar av-b">TMG</div>
+          <div class="team-name">TCHANGAI M.Grâce </div>
+          <div class="team-role">Expert Réseaux</div>
+          <div class="team-group">Groupe 1</div>
+        </div>
+
+         <div class="team-card reveal reveal-delay-2">
+          <div class="team-avatar av-c">KJ</div>
+          <div class="team-name">KOFFI Joséphine</div>
+          <div class="team-role">Expert Sécurité</div>
+          <div class="team-group">Groupe 2</div>
+        </div>
+        <div class="team-card reveal reveal-delay-2">
+          <div class="team-avatar av-c">MP</div>
+          <div class="team-name">MOGAO Patrick</div>
+          <div class="team-role">Expert Sécurité</div>
+          <div class="team-group">Groupe 3</div>
+        </div>
+         <div class="team-card reveal reveal-delay-2">
+          <div class="team-avatar av-c">PE</div>
+          <div class="team-name">POZOU Emmanuel</div>
+          <div class="team-role">Expert Sécurité</div>
+          <div class="team-group">Groupe 4</div>
+        </div>
+        
+        <div class="team-card reveal reveal-delay-3">
+          <div class="team-avatar av-d">KJ</div>
+          <div class="team-name">KPETO Joel</div>
+          <div class="team-role">Expert Développement</div>
+          <div class="team-group">Groupe 5</div>
+        </div>
+      </div>
+      <p style="margin-top:1.5rem;font-size:.8rem;color:var(--muted);text-align:center">
+        ✏️ Les noms et rôles de l'équipe sont à personnaliser selon votre équipe réelle.
+      </p>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-inner">
+      <div class="contact-wrapper">
+        <!-- Info -->
+        <div>
+          <p class="section-label reveal">Messagerie</p>
+          <h2 class="section-title reveal reveal-delay-1">Échangez avec les <em style="font-style:italic;color:var(--gold)">membres</em></h2>
+          <p class="section-desc reveal reveal-delay-2" style="margin-bottom:2rem">
+            Ce formulaire permet aux membres du domaine IPNet de se contacter entre les différents groupes. Sélectionnez votre groupe destinataire et envoyez votre message.
+          </p>
+          <div class="contact-info">
+            <div class="contact-block reveal reveal-delay-1">
+              <div class="contact-block-icon">🌐</div>
+              <div class="contact-block-text">
+                <h4>Domaine académique</h4>
+                <p>ipnetexperts.net<br><a href="http://students1.ipnetexperts.net/">students1</a> · <a href="http://students2.ipnetexperts.net/">students2</a> · <a href="http://students3.ipnetexperts.net/">students3</a> · <a href="http://students4.ipnetexperts.net/">students4</a> · <a href="http://students5.ipnetexperts.net/">students5</a></p>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+
+        
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">
+      <span>IPNet</span> Student Hub · Portail Académique
+    </div>
+    <ul class="footer-links">
+      <li><a href="#about">À propos</a></li>
+      <li><a href="#groups">Portfolios</a></li>
+      <li><a href="#team">Équipe</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <p class="footer-copy">© 2025 IPNet Experts · Tous droits réservés</p>
+  </footer>
+
+  <script>
+    // ── Nav scroll effect ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => observer.observe(el));
+
+    // ── Form handling (Formspree AJAX) ──
+    const form = document.getElementById('contactForm');
+    const successMsg = document.getElementById('formSuccess');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('.form-submit');
+      btn.textContent = 'Envoi en cours...';
+      btn.disabled = true;
+
+      const data = new FormData(form);
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          form.reset();
+          successMsg.style.display = 'block';
+          btn.textContent = 'Message envoyé ✓';
+          btn.style.background = 'linear-gradient(135deg,#4ab87a,#78c878)';
+        } else {
+          btn.textContent = 'Erreur — Réessayez';
+          btn.disabled = false;
+        }
+      } catch {
+        btn.textContent = 'Configurez Formspree d\'abord';
+        btn.disabled = false;
+      }
+    });
+
+    // ── Smooth active nav link ──
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current
+          ? 'var(--gold-lt)' : '';
+      });
+    });
+  </script>
+</body>
+</html>
